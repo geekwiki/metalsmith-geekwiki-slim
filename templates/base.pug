@@ -1,0 +1,38 @@
+include components/utils
+//- 
+  This is the base template, which is basically all of the common 
+  components of nearly every page
+
+doctype html
+html.no-js.no-touch(lang='en')
+  head
+    include partials/html/head
+  body
+    #wrapper
+      // Begin Header
+      header#header
+        //- Include Header
+        include partials/header
+        
+        //- Include Navbar
+        include partials/navbar
+      // End Header
+      // Begin Body Content
+      .container
+        //-include banner
+
+        // Content
+        block content
+          h1 TEST!..
+          p This is a conent test
+
+      // End Body Content
+      // // .container
+      footer#footer
+        include partials/footer
+    // // #wrapper
+    include partials/assets/js
+
+| <!-- foobar: !{foobar} -->
+
+| <!-- jquery: !{JSON.stringify(jquery)} -->

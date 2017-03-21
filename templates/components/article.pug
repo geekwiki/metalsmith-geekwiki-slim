@@ -1,0 +1,531 @@
+//-
+  Generate the social network icons below each post
+
+  @param  {object}  shareables        Object with items to be shared
+  @param  {string}  shareables.href   Href for link
+  @param  {string}  shareables.icon   Icon to use
+  @note   Only icons are: facebook, twitter, googleplus, pinterest, email
+
+  @example
+    Example w/ FB & Email
+    +social-network([
+      { icon: 'facebook', href: 'http://fb/?' },
+      { icon: 'email', href: 'http://fb/?' }
+    ])
+
+    // Example w/ FB/Twitter/G+/Pin/Email
+    +social-network([
+      { icon: 'facebook',   href: '#' },
+      { icon: 'twitter',    href: '#' },
+      { icon: 'googleplus', href: '#' },
+      { icon: 'pinterest',  href: '#' },
+      { icon: 'email',      href: '#' }
+    ])
+    =>  <div class="share">
+          <span>Share:</span>
+          <ul>
+            <li><a data-icon="facebook" href="#"></a></li>
+            <li><a data-icon="twitter" href="#"></a></li>
+            <li><a data-icon="googleplus" href="#"></a></li>
+            <li><a data-icon="pinterest" href="#"></a></li>
+            <li><a data-icon="email" href="#"></a></li>
+          </ul>
+        </div>
+mixin social-network(shareables)
+  .share
+    span Share:
+    ul
+      each share in shareables
+        - var icon = (typeof share.icon === 'string' ? share.icon : 'NOICON')
+        - var href = (typeof share.href === 'string' ? share.href : 'javascript:alert(document.cookie)')
+        li
+          a(data-icon=icon, href=href)
+
+//-
+  Create the blue tags in the upper left corner of each article/post item. This includes the timestamp
+  the article was posted, and the categories
+  @param  {string}  timestamp             Timestamp the article was posted
+  @param  {array}   categories            Categories of said article
+  @param  {string}  categories[*].title   Title of category
+  @param  {string}  categories[*].href    Link for category link to target
+
+  @example
+    +article-tags( '1 Minute Ago', [
+      { title: 'Foo', href: '#' },
+      { title: 'Bar', href: '#' }
+    ])
+mixin article-tags( timestamp, categories )
+  - var timestamp = ( typeof timestamp === 'string' ? timestamp : 'NADA' )
+  - var categories = ( ( typeof categories === 'object' && Array.isArray(categories) ) ? categories : [] )
+  ul.tags
+    if timestamp
+      li.tag-timestamp 
+        i 
+        = timestamp
+    if categories
+      each cat in categories
+        - var title = (typeof cat.title === 'string' ? cat.title : 'UNKNOWN CATEGORY')
+        - var href = (typeof cat.href === 'string' ? cat.href : '#')
+        li.tag-category
+          a(href=href)
+            span(data-hover=title) 
+              = title
+
+//-
+  Mixin to show the title in the articles object data, or display a 
+  defaulted value (if defined)
+
+  @param  {object|string}   articleObj    Articles Object, or the title itself
+  @param  {string}          deault        Default value for title
+  @param  {boolean}         sanitize      Sanitize the result (default doesn't)
+
+  @example 
+    // Basic Example
+    +article-title({title: 'Hello World'})
+      => Hello World
+  
+    // Defaulted Example
+    +article-title({}, 'Unknown Article')
+      => Unknown Article
+
+    // Unsanitized Example
+    +article-title({title: '<strong>Hello</strong> World'}, null, true)
+      => &lt;strong&gt;Hello&lt;/strong&gt; World
+mixin article-title( articleObj, deault, sanitize )
+  if articleObj && articleObj.title
+    if sanitize == true
+      = articleObj.title
+    else
+      != articleObj.title
+  else if deault
+    if sanitize == true
+      = deault
+    else
+      != deault
+  else
+    | What the FUCK do you want me to say?
+
+//-
+  Default social network share icons to use
+mixin default-share
+  +social-network([
+    { icon: 'facebook', href: '#' },
+    { icon: 'twitter', href: '#' },
+    { icon: 'googleplus', href: '#' },
+    { icon: 'pinterest', href: '#' },
+    { icon: 'email', href: '#' }
+  ])
+
+mixin parse-str( string, replacements )
+  -
+    for ( var find in replacements ) {
+      string = string.replace( new RegExp('\{\{'+ find +'\}\}','ig'), encodeURIComponent( replacements[ find ] ) )
+    }
+
+  != string
+
+mixin process-link( href, replacements )
+  -
+    for ( var find in replacements ) {
+      href = href.replace( new RegExp('\{\{'+ find +'\}\}','ig'), encodeURIComponent( replacements[ find ] ) )
+    }
+
+  a(href=href)&attributes(attributes)
+    block
+
+//-
+  Mixin to show the title in the articles object data, or display a 
+  defaulted value (if defined)
+
+  @param  {object|string}   articleObj    Articles Object, or the title itself
+  @param  {string}          deault        Default value for title
+  @param  {boolean}         sanitize      Sanitize the result (default doesn't)
+
+  @example
+     +article-post0({ title: '<strong>Example</strong> Using Post <em>Mixin #2</em>'})
+          h3 This is an example of article ONE
+          p Just some other content...
+mixin article-post( articleObj )
+  article.box-post.sticky
+    .box-beta
+      //- Article Tags go here
+      +article-tags( '1 Minute Ago', [
+        { title: 'Foo', href: '#' },
+        { title: 'Bar', href: '#' }
+      ])
+      .box-content
+        //- Article Title goes here
+        h2.box-title
+          a(href='neutral-post-1.html')
+            +article-title( articleObj )
+        .broadcast(data-broadcast-url='php/broadcast.php', data-broadcast-interval='10', data-broadcast-limit='5', data-broadcast-data='{"demo": "neutral", "count": 2}')
+        block
+      .meta
+        +default-share
+        a.more-link(href='neutral-post-1.html')
+          span(data-hover='More') More
+      // // .meta
+    // // .box-beta
+
+
+//-
+  Mixin to show the title in the articles object data, or display a 
+  defaulted value (if defined)
+
+  @param  {object|string}   articleObj    Articles Object, or the title itself
+  @param  {string}          deault        Default value for title
+  @param  {boolean}         sanitize      Sanitize the result (default doesn't)
+mixin article-post0( articleObj )
+  article.box-post.sticky
+    .box-beta
+      //- Article Tags go here
+      +article-tags( '1 Minute Ago', [
+        { title: 'Foo', href: '#' },
+        { title: 'Bar', href: '#' }
+      ])
+      .box-content
+        //- Article Title goes here
+        h2.box-title
+          a(href='neutral-post-1.html')
+            +article-title( articleObj )
+        .broadcast(data-broadcast-url='php/broadcast.php', data-broadcast-interval='10', data-broadcast-limit='5', data-broadcast-data='{"demo": "neutral", "count": 2}')
+        block
+      .meta
+        +default-share
+        a.more-link(href='neutral-post-1.html')
+          span(data-hover='More') More
+      // // .meta
+    // // .box-beta
+
+mixin article-post1(title)
+  // Begin Article Base
+  article.box-post
+    .box-beta
+      ul.tags
+        li.tag-timestamp 8 hours ago
+        li.tag-category
+          a(href='neutral-index.html')
+            span(data-hover='Something') Someting
+        li.tag-category
+          a(href='neutral-index.html')
+            span(data-hover='Video') Video
+      .box-content
+        //- Article/Post title
+        h2.box-title
+          //- This needs to link to full article
+          a(href='#') 
+            != title
+        // Begin Content
+        block
+        // End Content
+      // // .box-content
+      .meta
+        +default-share
+        a.more-link(href='neutral-post-2.html')
+          span(data-hover='More') More
+      // // .meta
+    // // .box-beta
+  // // .box-post
+  // End Article Base
+
+mixin article-post2( articleObj )
+  // Begin Article Post Mixin #2
+  article.box-post
+    .box-beta
+      ul.tags
+        li.tag-timestamp 1 sec ago
+        if articleObj.categories
+          each category in articleObj.categories
+            li.tag-category
+              a(href="#{category.href}")
+                span(data-hover="#{category.title}") 
+                != category.title
+      .box-content
+        //- Article/Post title
+        h2.box-title
+          //- This needs to link to full article
+          a(href='#') 
+            if articleObj.title
+              != articleObj.title
+            else
+              | No Title Provided...
+        // Begin Content
+        block
+        // End Content
+      // // .box-content
+      .meta
+        +default-share
+        a.more-link(href='neutral-post-2.html')
+          span(data-hover='More') More
+      // // .meta
+    // // .box-beta
+  // // .box-post
+  // End Article Post Mixin #2
+
+
+mixin article-post3( articleObj )
+  // Begin Article Post Mixin #3
+  article.box-post
+    .box-beta
+      ul.tags
+        li.tag-timestamp 1 sec ago
+        if articleObj.categories
+          each category in articleObj.categories
+            li.tag-category
+              a(href="#{category[1]}")
+                span(data-hover="#{category[0]}") 
+                != category[0]
+
+      .box-content
+        //- Article/Post title
+        h2.box-title
+          //- This needs to link to full article
+          a(href='#') 
+            if articleObj.title
+              != articleObj.title
+            else
+              | No Title Provided...
+        // Begin Content
+        block
+        // End Content
+      // // .box-content
+      .meta
+        +default-share
+        a.more-link(href='neutral-post-2.html')
+          span(data-hover='More') More
+      // // .meta
+    // // .box-beta
+  // // .box-post
+  // End Article Post Mixin #3
+
+//- 
+  @param  {object|string}   author            Author object, or username
+  @param  {string}          author.firstname  Authors first name
+  @param  {string}          author.lastname   Authors last name
+  @param  {string}          author.format     Format to display authors name (EG: lastname, firstname)
+  @param  {string}          author.username   Authors Github username
+  @param  {string}          author.github     Authors Github username
+  @param  {string}          author.facebook   Authors Facebook username
+  @param  {string}          author.twotter    Authors Twitter username
+  @param  {string|boolean}  author.href       Custom link (string), or disable hyperlink (boolean:false)
+
+  @note   Only one of author.username, author.github, author.facebook or author.twitter can be defined
+mixin compileAuthorLink( author )
+  -
+    var _author = {
+      value: '',
+      href: '',
+      authType: typeof author,
+      json: JSON.stringify(author),
+      classes:[]
+    }
+    var _data = {
+      steps: [],
+      fullSteps: 'None',
+      _author: 'None',
+      author: 'None'
+    }
+
+    // If author is a single string
+    if ( typeof author === 'string' ){
+      _author.value = author
+      _author.href = "//github.com/" + author
+      _data.steps.push( 'String' )
+    }
+    // If its an object..
+    else if ( typeof author === 'object' ){
+      _data.steps.push( 'Object' )
+      // Custom format specified
+      if ( typeof author.format === 'string' ){
+        _data.steps.push( 'author.format' )
+        _author.value = author.format
+
+        if ( typeof author.firstname === 'string' ){
+          _data.steps.push( 'author.firstname' )
+          _author.value = _author.value.replace( /firstname/i, author.firstname )
+        }
+        
+        if ( typeof author.lastname === 'string' ){
+          _data.steps.push( 'author.lastname' )
+          _author.value = _author.value.replace( /lastname/i, author.lastname )
+        }
+
+        if ( typeof author.username === 'string' ){
+          _data.steps.push( 'author.username' )
+          _author.value = _author.value.replace( /username/i, author.username )
+        }
+
+        // If a custom href is defined... use it
+        if ( typeof author.href === 'string' ){
+          _data.steps.push( 'author.href' )
+          // If the specified href doesn't have a protocol, then prepend the relative protocol
+          if ( ! /^((https?:)?\/\/|\#)/i.test( author.href ) ){
+            author.href = '//' + author.href
+          }
+        }
+        // If href is explicitly disabled
+        else if ( typeof author.href === 'boolean' && ! author.href ){
+          _data.steps.push( 'author.href[false]' )
+          _author.href = false
+        }
+        // If no href is defined, but a username or github is defined, link to github
+        else if ( typeof author.username === 'string' || typeof author.github === 'string' ){
+          _data.steps.push( 'author.(username|github)' )
+          _author.href = "//github.com/" + ( author.username || author.github )
+        }
+        // If a facebook username is provided
+        else if ( typeof author.facebook === 'string' ){
+          _data.steps.push( 'author.facebook' )
+          _author.href = "https://www.facebook.com/" + author.facebook
+        }
+        // If a twitter username is provided
+        else if ( typeof author.twitter === 'string' ){
+          _author.href = "https://twitter.com/" + author.twitter
+        }
+        else {
+          _data.steps.push( 'author.no_href' )
+          _author.href = false
+        }
+      }
+      // No format
+      else {
+        _data.steps.push( 'no author' )
+        _author.value = []
+
+        if ( typeof author.firstname === 'string' ){
+          _author.value.push( author.firstname )
+        }
+        
+        if ( typeof author.lastname === 'string' ){
+          _author.value.push( author.lastname )
+        }
+
+        if ( _author.value.length > 0 ){
+          _author.value = _author.value.join( ' ' )
+        }
+        else {
+          _author.value = 'AAAA'
+          _author.href = '#'
+        }
+      }
+    }
+    // Not an object or string..
+    else {
+      _author.value = 'BBBB'
+      _author.href = '#'
+    }
+
+    _data._author = JSON.stringify( _author )
+    _data.author = JSON.stringify( author )
+
+    if ( _data.steps.length > 0 ){
+      fullSteps = JSON.stringify( _data.steps )
+    }
+
+  if _author.href
+    a( href=_author.href, target="_blank", 'data-steps'=fullSteps, 'data-_author'=_data._author, 'data-author'=_data.author)
+      != _author.value
+  else
+    a( href=_author.href, target="_blank", 'data-steps'=fullSteps, 'data-_author'=_data._author, 'data-author'=_data.author).NOCLICKY
+      != _author.value
+    //- != _author.value
+
+
+mixin compileTitle( title )
+
+  h1 
+    em Page Title: 
+    strong
+      != title
+//-
+  mixin article-post-a(title, featured_image, tags, noShare)
+    // Begin Article Base
+    article.box-post
+      if featured_image
+        // Begin Featured Image
+        .box-alpha
+          //- Featured Image here (Optional)
+          figure.featured-image
+            a(href='neutral-post-2.html')
+              //- Need to have slideshow partials here
+              include slideshow
+        // // .box-alpha
+        // End Featured Image
+      .box-beta
+        if tags 
+          ul.tags
+            li.tag-timestamp 8 hours ago
+            li.tag-category
+              a(href='neutral-index.html')
+                span(data-hover='Something') Someting
+            li.tag-category
+              a(href='neutral-index.html')
+                span(data-hover='Video') Video
+        .box-content
+          //- Article/Post title
+          h2.box-title
+            //- This needs to link to full article
+            a(href='#') 
+              != title
+          // Begin Content
+          block
+          // End Content
+        // // .box-content
+        .meta
+          if noShare == true
+            include ../partials/article/share
+          a.more-link(href='neutral-post-2.html')
+            span(data-hover='More') More
+        // // .meta
+      // // .box-beta
+    // // .box-post
+    // End Article Base
+
+
+//- Full Article/Post pug template
+
+  article.box-post
+    //- Featured Image Div
+    .box-alpha
+      figure.featured-image
+        a(href='neutral-post-5.html')
+          img(src='/assets/img/thumbs/interior-man-767x431.jpg', width='767', height='431', srcset='/assets/img/thumbs/interior-man-767x431.jpg 767w, /assets/img/thumbs/interior-man-1534x862.jpg 1534w', sizes='(max-width: 767px) 100vw, 767px', alt='Interior man')
+          img(src='/assets/img/thumbs/interior-man-350x420-04x05.jpg', width='350', height='420', srcset='/assets/img/thumbs/interior-man-350x420-04x05.jpg 350w, /assets/img/thumbs/interior-man-700x840-04x05.jpg 700w', sizes='(max-width: 767px) 100vw, 350px', alt='Interior man')
+    // // .box-alpha
+    //- Tags Div
+    .box-beta
+      ul.tags
+        li.tag-timestamp 6 days ago
+        li.tag-category
+          a(href='neutral-index.html')
+            span(data-hover='Lifestyle') Lifestyle
+        li.tag-category
+          a(href='neutral-index.html')
+            span(data-hover='Tips and tricks') Tips and tricks
+      .box-content
+        h2.box-title
+          a(href='neutral-post-5.html') 10 practical interior design advices
+        p
+          | Do et euismod varius urna vivamus. Pretium arcu ligula nisi proident. Lacinia pellentesque qui mi porta parturient. Bibendum feugiat inceptos facilisis dictum anim metus. Leo nam dictum magnis duis. Idleo proident pede tortor mus nisi duis class labore tempor ea ligula velit netus venenatis cum libero purus morbi habitant nostrud.
+        p
+          | Anim proident aliquip euismod commodo nisi consectetuer vel. Sagittis habitant laborum aute a quisque laboris orci quam sem. Nullam do sunt nascetur nisi conubia. Reprehenderit iaculis viverra hendrerit amet cubilia sem cubilia pariatur. Commodo consectetuer auctor imperdiet aptent nunc primis feugiat anim.
+      // // .box-content
+      .meta
+        .share
+          span Share:
+          ul
+            li
+              a(data-icon='facebook', href='#')
+            li
+              a(data-icon='twitter', href='#')
+            li
+              a(data-icon='googleplus', href='#')
+            li
+              a(data-icon='pinterest', href='#')
+            li
+              a(data-icon='email', href='#')
+        a.more-link(href='neutral-post-5.html')
+          span(data-hover='More') More
+      // // .meta
+    // // .box-beta
+  // // .box-post
